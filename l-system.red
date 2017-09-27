@@ -6,14 +6,18 @@ Red [
 	Needs: %models.red
 ]
 context [
+	ctx: self
+	
 	scale: origin: length: len: angle: width: delta-width: times-length: none
 	delta-length: delta-len: delta-angle: anti-aliasing?: stack: commands: none
 	_L: _U: _X: _Origin: _Scale: _Length: _Angle: _Len: _Width: _Delta-width: none
 	_Delta-length: _Delta-len: _Times-length: _Delta-angle: _Anti-aliasing?: none
-	_Drop: str1: str: iter: lang: win: none
+	_Models: str1: str: iter: lang: win: none
+	
 	models: load %models.red
 	chars: [#"L" #"U" #"X"]
-						
+	size: 700x600
+	
 	defaults: [
 		scale 	2.0
 		origin 	300x500
@@ -111,14 +115,15 @@ context [
 		_Initial/text: model/initial
 		_Iterations/data: model/iterations
 	]
+	field-options: [
+		'origin _Origin/data 'scale _Scale/data 'length _Length/data 
+		'angle _Angle/data 'len _Len/data 'width _Width/data 'delta-width _Delta-width/data 
+		'delta-length _Delta-length/data 'delta-len _Delta-len/data 
+		'times-length _Times-length/data 'delta-angle _Delta-angle/data
+		'anti-aliasing? to-paren reduce [_Anti-aliasing?/data]
+	]
 	show-current: does [
-		set-opts reduce [
-			'origin _Origin/data 'scale _Scale/data 'length _Length/data 
-			'angle _Angle/data 'len _Len/data 'width _Width/data 'delta-width _Delta-width/data 
-			'delta-length _Delta-length/data 'delta-len _Delta-len/data 
-			'times-length _Times-length/data 'delta-angle _Delta-angle/data
-			'anti-aliasing? _Anti-aliasing?/data
-		] _Iterations/data
+		set-opts reduce field-options _Iterations/data
 		language: reduce [#"L" _L/text] 
 		unless empty? _U/text [append language reduce [#"U" _U/text]]
 		unless empty? _X/text [append language reduce [#"X" _X/text]]
@@ -129,7 +134,9 @@ context [
 	language: models/1/language
 	str1: expand str: models/1/initial models/1/iterations
 	make-commands str1 models/1/iterations
+	;make-models: function [drop: copy [] forall models [append drop models/1/title] drop]
 	win: view/no-wait compose/deep [
+		title "L-system playground"
 		tab-panel [
 			"Graphics" [
 				group-box "Options" [
@@ -150,7 +157,7 @@ context [
 					text "X:" 15 _X: field 147 hint "Rule for X" (either X: select language #"X" [X][""])
 					text "T-length:" 50 _Times-length: field 65 (to-string times-length) 
 					return 
-					text "Model:" 40 _Drop: drop-list data [(drop: copy [] forall models [append drop models/1/title] drop)] select 1 on-change [
+					text "Model:" 40 _Models: drop-list data [(drop: copy [] forall models [append drop models/1/title] drop)] select 1 on-change [
 						set-fields pick models face/selected
 						show-current
 					]
@@ -168,7 +175,7 @@ context [
 					button "Show" 65 [show-current] 
 				]
 				return
-				_Img: image 700x600 
+				_Img: image (size) 
 				draw [(commands)]
 			]
 			"Instructions" [space 10x5 
@@ -201,5 +208,64 @@ context [
 		]
 	]
 	set-fields pick models 1
+	win/menu: ["Save" save  "Save as ..." save-as "Save image ..." save-image "Delete" delete]
+	win/actors: object [
+		on-menu: func [face event /local model _New save? production sel drop][
+			switch event/picked [
+				save [
+					model: pick models _Models/selected 
+					model/options: reduce field-options
+					write %models.red models
+				]
+				save-as [
+					view/flags [
+						title "Save as ..."
+						_New: field 133 hint "Model name:" return 
+						button "Save" [save?: yes unview] 
+						button "Cancel" [save?: no unview]
+					][modal popup]
+					if save? [
+						language: copy []
+						forall chars [
+							if not empty? production: select ctx/(to-word rejoin ["_" chars/1]) 'text [
+								append language reduce [chars/1 production]
+							]
+						]
+						model: make map! compose/deep [
+						    title (_New/text)
+							language [(language)]
+							initial (_Initial/text)
+							iterations (_Iterations/data)
+							options [(reduce field-options)]
+						]
+						append models model
+						write %models.red models
+					]
+				]
+				save-image [
+					;write file: request-file/filter/save [
+					;	"Image Files" "*.png" "All" "*.*"
+					;] draw size _Img/draw
+					view/flags [
+						title "Save image"
+						_New: field 133 data ".png" return 
+						button "Save" [save?: yes unview] 
+						button "Cancel" [save?: no unview]
+					][modal popup]
+					if save? [
+						save to-file _New/text draw size _Img/draw
+					]
+				]
+				delete [
+					remove at models _Models/selected
+					if _Models/selected > length? models [_Models/selected: 1]
+					drop: copy [] forall models [append drop models/1/title] 
+					_Models/data: drop
+					set-fields pick models _Models/selected 
+					show-current
+				]
+			]
+		]
+	]
 	win
 ]
