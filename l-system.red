@@ -212,7 +212,7 @@ context [
 		]
 	]
 	set-fields pick models 1
-	win/menu: ["Save" save  "Save as ..." save-as "Save image ..." save-image "Delete" delete "Reload" reload]
+	win/menu: ["Save" save  "Add ..." add "Save image ..." save-image "Remove" remove "Reload" reload]
 	win/actors: object [
 		on-menu: func [face event /local model _New save? production sel drop][
 			switch event/picked [
@@ -221,11 +221,11 @@ context [
 					model/options: reduce field-options
 					write %models.red models
 				]
-				save-as [
+				add [
 					view/flags [
 						title "Save as ..."
 						_New: field 133 hint "Model name:" return 
-						button "Save" [save?: yes unview] 
+						button "OK" [save?: yes unview] 
 						button "Cancel" [save?: no unview]
 					][modal popup]
 					if save? [
@@ -242,8 +242,8 @@ context [
 							iterations (_Iterations/data)
 							options [(reduce field-options)]
 						]
-						probe append models new-model
-						write %models.red models
+						append models new-model
+						;write %models.red models
 						drop: copy [] forall models [append drop models/1/title] 
 						_Models/data: drop
 						_Models/selected: length? models
@@ -265,7 +265,7 @@ context [
 						save to-file _New/text draw size _Img/draw
 					]
 				]
-				delete [
+				remove [
 					remove at models _Models/selected
 					if _Models/selected > length? models [_Models/selected: 1]
 					drop: copy [] forall models [append drop models/1/title] 
