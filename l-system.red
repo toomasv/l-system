@@ -12,7 +12,7 @@ context [
 	delta-length: delta-len: delta-angle: anti-aliasing?: stack: commands: none
 	_L: _U: _X: _Origin: _Scale: _Length: _Angle: _Len: _Width: _Delta-width: none
 	_Delta-length: _Delta-len: _Times-length: _Delta-angle: _Anti-aliasing?: none
-	_Models: str1: str: iter: lang: win: none
+	_Models: _Matrix: str1: str: iter: lang: win: scl: none
 	
 	models: load %models.red
 	chars: [#"L" #"U" #"X"]
@@ -80,7 +80,7 @@ context [
 			]
 		][str]
 	]
-	make-commands: func [str iter /local symb cmd scl][
+	make-commands: func [str iter /local symb cmd][
 		length: either iter > 0 [length / (2 * iter)][length] 
 		parse str [some [
 				set symb [#"<" | #">" | #"&" | #"(" | #")" | #"´" | #"`"] (do select drawing symb)
@@ -101,7 +101,7 @@ context [
 		insert commands compose/deep [
 			anti-alias (either anti-aliasing? ['on]['off]) 
 			line-width (width)
-			matrix [(scl) 0 0 (negate scl) (origin/x) (origin/y)]
+			_Matrix: matrix [(scl) 0 0 (negate scl) (origin/x) (origin/y)]
 		]
 	]
 	set-fields: func [model /local char lang vals][
@@ -177,6 +177,15 @@ context [
 						show-current
 					]
 					button "Show" 65 [show-current] 
+				]
+				slider 20x174 data (scl) [
+					on-create: func [face [object!]][
+						on-change face none
+					]
+					on-change: func [face [object!] event [event! none!]][
+						_Matrix/2/1: face/data
+						_Matrix/2/4: negate face/data
+					]
 				]
 				return
 				_Img: image (size) 
