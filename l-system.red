@@ -277,7 +277,7 @@ context [
 					models: load %models.red
 					drop: copy [] forall models [append drop models/1/title] 
 					_Models/data: drop
-					set-fields models/1
+					set-fields models/(_Models/selected)
 					show-current
 				]
 			]
