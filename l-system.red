@@ -208,7 +208,7 @@ context [
 		]
 	]
 	set-fields pick models 1
-	win/menu: ["Save" save  "Save as ..." save-as "Save image ..." save-image "Delete" delete]
+	win/menu: ["Save" save  "Save as ..." save-as "Save image ..." save-image "Delete" delete "Reload" reload]
 	win/actors: object [
 		on-menu: func [face event /local model _New save? production sel drop][
 			switch event/picked [
@@ -225,21 +225,26 @@ context [
 						button "Cancel" [save?: no unview]
 					][modal popup]
 					if save? [
-						language: copy []
+						new-language: copy []
 						forall chars [
-							if not empty? production: select ctx/(to-word rejoin ["_" chars/1]) 'text [
-								append language reduce [chars/1 production]
+							if not empty? production: copy select ctx/(to-word rejoin ["_" chars/1]) 'text [
+								append new-language reduce [chars/1 production]
 							]
 						]
-						model: make map! compose/deep [
+						new-model: make map! compose/deep [
 						    title (_New/text)
-							language [(language)]
-							initial (_Initial/text)
+							language [(new-language)]
+							initial (copy _Initial/text)
 							iterations (_Iterations/data)
 							options [(reduce field-options)]
 						]
-						append models model
+						probe append models new-model
 						write %models.red models
+						drop: copy [] forall models [append drop models/1/title] 
+						_Models/data: drop
+						_Models/selected: length? models
+						set-fields pick models _Models/selected 
+						show-current
 					]
 				]
 				save-image [
@@ -262,6 +267,17 @@ context [
 					drop: copy [] forall models [append drop models/1/title] 
 					_Models/data: drop
 					set-fields pick models _Models/selected 
+					show-current
+				]
+				reload [
+					models: load %models.red
+					;	set-opts models/1/options iter: models/1/iterations
+					;	language: models/1/language
+					;	str1: expand str: models/1/initial models/1/iterations
+					;	make-commands str1 models/1/iterations
+					drop: copy [] forall models [append drop models/1/title] 
+					_Models/data: drop
+					set-fields models/1
 					show-current
 				]
 			]
