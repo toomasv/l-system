@@ -106,7 +106,7 @@ context [
 	]
 	set-fields: func [model /local char lang vals][
 		forall chars [
-			put self/(to-word rejoin ["_" chars/1]) 'text either lang: select model/language chars/1 [lang][""]
+			put self/(to-word rejoin ["_" chars/1]) 'text either lang: select model/language chars/1 [lang][none]
 		]
 		set-opts model/options
 		vals: extract defaults 2
@@ -277,6 +277,7 @@ context [
 					models: load %models.red
 					drop: copy [] forall models [append drop models/1/title] 
 					_Models/data: drop
+					if _Models/selected > length? models [_Models/selected: 1]
 					set-fields models/(_Models/selected)
 					show-current
 				]
