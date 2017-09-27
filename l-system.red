@@ -58,14 +58,15 @@ context [
 		#"´" [length: length + delta-length len: len + delta-len]
 		#"`" [length: length - delta-length len: len - delta-len]
 	]
-	set-opts: func [opts iter /local word value][
+	set-opts: func [opts /local word value][
 		stack: copy [] commands: copy []
 		foreach [word value] self/defaults [self/:word: value]
 		put drawing #"+" [rotate (negate angle)]
 		put drawing #"-" [rotate (angle)]
-		if opts [opts: compose opts foreach [word value] opts [self/:word: value]]
+		opts: compose opts 
+		foreach [word value] opts [self/:word: value]
 	]
-	expand: func [str iter][
+	expand: func [str iter /local elem][
 		either iter > 0 [
 			str: loop iter [
 				str: rejoin parse/case str compose [
@@ -107,7 +108,7 @@ context [
 		forall chars [
 			put self/(to-word rejoin ["_" chars/1]) 'text either lang: select model/language chars/1 [lang][""]
 		]
-		set-opts model/options model/iterations
+		set-opts model/options
 		vals: extract defaults 2
 		forall vals [
 			put self/(to-word rejoin ["_" vals/1]) 'data get vals/1 
@@ -123,14 +124,15 @@ context [
 		'anti-aliasing? to-paren reduce [_Anti-aliasing?/data]
 	]
 	show-current: does [
-		set-opts reduce field-options _Iterations/data
+		set-opts reduce field-options
 		language: reduce [#"L" _L/text] 
 		unless empty? _U/text [append language reduce [#"U" _U/text]]
 		unless empty? _X/text [append language reduce [#"X" _X/text]]
 		make-commands expand _Initial/text _Iterations/data _Iterations/data
 		_Img/draw: commands
 	]
-	set-opts models/1/options iter: models/1/iterations
+	set-opts models/1/options 
+	iter: models/1/iterations
 	language: models/1/language
 	str1: expand str: models/1/initial models/1/iterations
 	make-commands str1 models/1/iterations
@@ -157,7 +159,9 @@ context [
 					text "X:" 15 _X: field 147 hint "Rule for X" (either X: select language #"X" [X][""])
 					text "T-length:" 50 _Times-length: field 65 (to-string times-length) 
 					return 
-					text "Model:" 40 _Models: drop-list data [(drop: copy [] forall models [append drop models/1/title] drop)] select 1 on-change [
+					text "Model:" 40 _Models: drop-list data [
+						(drop: copy [] forall models [append drop models/1/title] drop)
+					] select 1 on-change [
 						set-fields pick models face/selected
 						show-current
 					]
