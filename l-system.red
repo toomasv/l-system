@@ -271,10 +271,6 @@ context [
 				]
 				reload [
 					models: load %models.red
-					;	set-opts models/1/options iter: models/1/iterations
-					;	language: models/1/language
-					;	str1: expand str: models/1/initial models/1/iterations
-					;	make-commands str1 models/1/iterations
 					drop: copy [] forall models [append drop models/1/title] 
 					_Models/data: drop
 					set-fields models/1
