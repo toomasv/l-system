@@ -12,7 +12,7 @@ context [
 	delta-length: delta-len: delta-angle: anti-aliasing?: stack: commands: none
 	_L: _U: _X: _Origin: _Scale: _Length: _Angle: _Len: _Width: _Delta-width: none
 	_Delta-length: _Delta-len: _Times-length: _Delta-angle: _Anti-aliasing?: none
-	_Models: _Matrix: str1: str: iter: lang: win: scl: none
+	_Models: _Matrix: _Zoom: str1: str: iter: lang: win: scl: none
 	
 	models: load %models.red
 	chars: [#"L" #"U" #"X"]
@@ -137,36 +137,39 @@ context [
 	str1: expand str: models/1/initial models/1/iterations
 	make-commands str1 models/1/iterations
 	;make-models: function [drop: copy [] forall models [append drop models/1/title] drop]
+	diff_: down?_: pos_: change_: none
 	win: view/no-wait compose/deep [
 		title "L-system playground"
 		tab-panel [
 			"Graphics" [
 				group-box "Options" [
-					text "Origin:" 50 _Origin: field 65 (to-string origin) 
-					text "Width:" 50 _Width: field 65 (to-string width) 
-					text "Length:" 55 _Length: field 65 (to-string length) 
-					text "Len:" 50 _Len: field 65 (to-string len) 
-					text "Angle:" 50 _Angle: field 65 (to-string angle) 
+					style label: text middle right
+					label "Origin:" 50 _Origin: field 65 (to-string origin) 
+					label "Width:" 50 _Width: field 65 (to-string width) 
+					label "Length:" 55 _Length: field 65 (to-string length) 
+					label "Len:" 50 _Len: field 65 (to-string len) 
+					label "Angle:" 50 _Angle: field 65 (to-string angle) 
 					return 
-					text "Scale:" 50 _Scale: field 65 (to-string scale)
-					text "D-width:" 50 _Delta-width: field 65 (to-string delta-width) 
-					text "D-Length:" 55 _Delta-length: field 65 (to-string delta-length) 
-					text "D-Len:" 50 _Delta-len: field 65 (to-string delta-len)
-					text "D-angle:" 50 _Delta-angle: field 65 (to-string delta-angle) 
+					label "Scale:" 50 _Scale: field 65 (to-string scale)
+					label "D-width:" 50 _Delta-width: field 65 (to-string delta-width) 
+					label "D-Length:" 55 _Delta-length: field 65 (to-string delta-length) 
+					label "D-Len:" 50 _Delta-len: field 65 (to-string delta-len)
+					label "D-angle:" 50 _Delta-angle: field 65 (to-string delta-angle) 
 					return
-					text "L:" 15 _L: field 146 hint "Rule for L" (select language #"L")
-					text "U:" 15 _U: field 147 hint "Rule for U" (either U: select language #"U" [U][""])
-					text "X:" 15 _X: field 147 hint "Rule for X" (either X: select language #"X" [X][""])
-					text "T-length:" 50 _Times-length: field 65 (to-string times-length) 
+					label "L:" 15 _L: field 146 hint "Rule for L" (select language #"L")
+					label "U:" 15 _U: field 147 hint "Rule for U" (either U: select language #"U" [U][""])
+					label "X:" 15 _X: field 147 hint "Rule for X" (either X: select language #"X" [X][""])
+					label "T-length:" 50 _Times-length: field 65 (to-string times-length) 
 					return 
-					text "Model:" 40 _Models: drop-list data [
+					label "Model:" 40 _Models: drop-list data [
 						(drop: copy [] forall models [append drop models/1/title] drop)
 					] select 1 on-change [
 						set-fields pick models face/selected
+						_Zoom/data: scl
 						show-current
 					]
-					text "Initial:" 35 _Initial: field 100 (to-string str) 
-					text "Iterations:" 55 _Iterations: field 20 (to-string iter) pad 5x0
+					label "Initial:" 35 _Initial: field 100 (to-string str) 
+					label "Iterations:" 55 _Iterations: field 20 (to-string iter) pad 5x0
 					_Anti-aliasing?: check "Anti-alias" data (anti-aliasing?) pad 7x0
 					button "<" 25 [
 						_Iterations/data: _Iterations/data - 1
@@ -178,10 +181,10 @@ context [
 					]
 					button "Show" 65 [show-current] 
 				]
-				slider 20x174 data (scl) [
-					on-create: func [face [object!]][
-						on-change face none
-					]
+				_Zoom: slider 20x174 data (scl) [
+					;on-create: func [face [object!]][
+					;	on-change face none
+					;]
 					on-change: func [face [object!] event [event! none!]][
 						_Matrix/2/1: face/data
 						_Matrix/2/4: negate face/data
@@ -190,6 +193,17 @@ context [
 				return
 				_Img: image (size) 
 				draw [(commands)]
+				
+				all-over
+				on-down [diff_: event/offset - _Origin/data down?_: yes]
+				on-up [down?_: no _Origin/data: pos_]
+				on-over [
+					if down?_ [
+						change_: _Origin/data - event/offset + diff_
+						pos_: _Origin/data - change_ 
+						_Matrix/2/5: pos_/x _Matrix/2/6: pos_/y
+					]
+				]
 			]
 			"Instructions" [space 10x5 
 					text "X"  20 text "For controlling repetition patterns only. Not directly drawn." return
