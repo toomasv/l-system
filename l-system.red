@@ -101,6 +101,7 @@ context [
 		insert commands compose/deep [
 			anti-alias (either anti-aliasing? ['on]['off]) 
 			line-width (width)
+			line-join miter
 			_Matrix: matrix [(scl) 0 0 (negate scl) (origin/x) (origin/y)]
 		]
 	]
@@ -180,7 +181,7 @@ context [
 					]
 					label "Initial:" 35 _Initial: field 100 (to-string str) 
 					label "Iterations:" 55 _Iterations: field 20 (to-string iter) pad 5x0
-					_Anti-aliasing?: check "Anti-alias" data (anti-aliasing?) pad 7x0
+					_Anti-aliasing?: check "Anti-alias" data (anti-aliasing?) pad 15x0
 					button "<" 25 [
 						_Iterations/data: _Iterations/data - 1
 						show-current
@@ -201,6 +202,7 @@ context [
 					;	on-change face none
 					;]
 					on-change: func [face [object!] event [event! none!]][
+						if scale < iter [_Scale/data: round/to face/data * iter 0.01]
 						_Matrix/2/1: face/data
 						_Matrix/2/4: negate face/data
 					]
@@ -254,7 +256,16 @@ context [
 		on-menu: func [face event /local model _New save? production sel drop new-language new-model][
 			switch event/picked [
 				save [
-					model: pick models _Models/selected 
+					model: pick models _Models/selected
+					language: copy []
+					forall chars [
+						if not empty? production: copy select ctx/(to-word rejoin ["_" chars/1]) 'text [
+							append language reduce [chars/1 production]
+						]
+					]
+					model/language: language 
+					model/initial: copy _Initial/text
+					model/iterations: _Iterations/data
 					model/options: reduce field-options
 					write %models.red models
 				]
