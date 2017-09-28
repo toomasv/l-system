@@ -136,7 +136,17 @@ context [
 	language: models/1/language
 	str1: expand str: models/1/initial models/1/iterations
 	make-commands str1 models/1/iterations
-	;make-models: function [drop: copy [] forall models [append drop models/1/title] drop]
+	make-models: func [/selected sel /local drop][
+		drop: copy [] forall models [append drop models/1/title] 
+		_Models/data: drop
+		either selected [
+			_Models/selected: sel
+		][
+			if _Models/selected > length? models [_Models/selected: 1]
+		]
+		set-fields pick models _Models/selected 
+		show-current
+	]
 	diff_: down?_: pos_: change_: none
 	win: view/no-wait compose/deep [
 		title "L-system playground"
@@ -165,8 +175,8 @@ context [
 						(drop: copy [] forall models [append drop models/1/title] drop)
 					] select 1 on-change [
 						set-fields pick models face/selected
-						_Zoom/data: scl
 						show-current
+						_Zoom/data: scl
 					]
 					label "Initial:" 35 _Initial: field 100 (to-string str) 
 					label "Iterations:" 55 _Iterations: field 20 (to-string iter) pad 5x0
@@ -174,12 +184,17 @@ context [
 					button "<" 25 [
 						_Iterations/data: _Iterations/data - 1
 						show-current
+						_Zoom/data: scl
 					]
 					button ">" 25 [
 						_Iterations/data: _Iterations/data + 1
 						show-current
+						_Zoom/data: scl
 					]
-					button "Show" 65 [show-current] 
+					button "Show" 65 [
+						show-current
+						_Zoom/data: scl
+					] 
 				]
 				_Zoom: slider 20x174 data (scl) [
 					;on-create: func [face [object!]][
@@ -193,7 +208,6 @@ context [
 				return
 				_Img: image (size) 
 				draw [(commands)]
-				
 				all-over
 				on-down [diff_: event/offset - _Origin/data down?_: yes]
 				on-up [down?_: no _Origin/data: pos_]
@@ -237,7 +251,7 @@ context [
 	set-fields pick models 1
 	win/menu: ["Save" save  "Add ..." add "Save image ..." save-image "Remove" remove "Reload" reload]
 	win/actors: object [
-		on-menu: func [face event /local model _New save? production sel drop][
+		on-menu: func [face event /local model _New save? production sel drop new-language new-model][
 			switch event/picked [
 				save [
 					model: pick models _Models/selected 
@@ -246,7 +260,7 @@ context [
 				]
 				add [
 					view/flags [
-						title "Save as ..."
+						title "Add model"
 						_New: field 133 hint "Model name:" return 
 						button "OK" [save?: yes unview] 
 						button "Cancel" [save?: no unview]
@@ -266,18 +280,10 @@ context [
 							options [(reduce field-options)]
 						]
 						append models new-model
-						;write %models.red models
-						drop: copy [] forall models [append drop models/1/title] 
-						_Models/data: drop
-						_Models/selected: length? models
-						set-fields pick models _Models/selected 
-						show-current
+						make-models/selected length? models
 					]
 				]
 				save-image [
-					;write file: request-file/filter/save [
-					;	"Image Files" "*.png" "All" "*.*"
-					;] draw size _Img/draw
 					view/flags [
 						title "Save image"
 						_New: field 133 data ".png" return 
@@ -290,19 +296,11 @@ context [
 				]
 				remove [
 					remove at models _Models/selected
-					if _Models/selected > length? models [_Models/selected: 1]
-					drop: copy [] forall models [append drop models/1/title] 
-					_Models/data: drop
-					set-fields pick models _Models/selected 
-					show-current
+					make-models
 				]
 				reload [
 					models: load %models.red
-					drop: copy [] forall models [append drop models/1/title] 
-					_Models/data: drop
-					if _Models/selected > length? models [_Models/selected: 1]
-					set-fields models/(_Models/selected)
-					show-current
+					make-models
 				]
 			]
 		]
