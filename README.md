@@ -1,5 +1,5 @@
 # l-system
-Playground for l-system
+Playground for L-system
 
 Changing a model and navigating away from it does not forget the changes, but changes are not saved. Previous state can be restored by `Reload`-ing.
 
