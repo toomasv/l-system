@@ -101,7 +101,7 @@ context [
 		insert commands compose/deep [
 			anti-alias (either anti-aliasing? ['on]['off]) 
 			line-width (width)
-			line-join miter
+			line-join round
 			_Matrix: matrix [(scl) 0 0 (negate scl) (origin/x) (origin/y)]
 		]
 	]
@@ -220,6 +220,10 @@ context [
 						_Matrix/2/5: pos_/x _Matrix/2/6: pos_/y
 					]
 				]
+				on-wheel [
+					_Matrix/2/1: either 0 > event/picked [_Matrix/2/1 / 1.1][_Matrix/2/1 * 1.1]
+					_Matrix/2/4: either 0 > event/picked [_Matrix/2/4 / 1.1][_Matrix/2/4 * 1.1]
+				]
 			]
 			"Instructions" [space 10x5 
 					text "X"  20 text "For controlling repetition patterns only. Not directly drawn." return
@@ -251,67 +255,89 @@ context [
 		]
 	]
 	set-fields pick models 1
-	win/menu: ["Save" save  "Add ..." add "Save image ..." save-image "Remove" remove "Reload" reload]
+	win/menu: [
+		"Save (^S)" save  
+		"Add ... (^A)" add 
+		"Delete (^D)" delete 
+		"Reload (^S)" reload 
+		"Save image ... (^I)" save-image
+	]
+	save-models: has [model production][
+		model: pick models _Models/selected
+		language: copy []
+		forall chars [
+			if not empty? production: copy select ctx/(to-word rejoin ["_" chars/1]) 'text [
+				append language reduce [chars/1 production]
+			]
+		]
+		model/language: language 
+		model/initial: copy _Initial/text
+		model/iterations: _Iterations/data
+		model/options: reduce field-options
+		write %models.red models
+	]
+	add-model: has [save? new-language new-model production][
+		view/flags [
+			title "Add model"
+			_New: field 133 hint "Model name:" return 
+			button "OK" [save?: yes unview] 
+			button "Cancel" [save?: no unview]
+		][modal popup]
+		if save? [
+			new-language: copy []
+			forall chars [
+				if not empty? production: copy select ctx/(to-word rejoin ["_" chars/1]) 'text [
+					append new-language reduce [chars/1 production]
+				]
+			]
+			new-model: make map! compose/deep [
+				title (_New/text)
+				language [(new-language)]
+				initial (copy _Initial/text)
+				iterations (_Iterations/data)
+				options [(reduce field-options)]
+			]
+			append models new-model
+			make-models/selected length? models
+		]
+	]
+	image-save: has [save?][
+		view/flags [
+			title "Save image"
+			_New: field 133 data ".png" return 
+			button "Save" [save?: yes unview] 
+			button "Cancel" [save?: no unview]
+		][modal popup]
+		if save? [
+			save to-file _New/text draw size _Img/draw
+		]
+	]
+	delete-model: does [
+		remove at models _Models/selected
+		make-models
+	]
+	reload-models: does [
+		models: load %models.red
+		make-models
+	]
 	win/actors: object [
 		on-menu: func [face event /local model _New save? production sel drop new-language new-model][
 			switch event/picked [
-				save [
-					model: pick models _Models/selected
-					language: copy []
-					forall chars [
-						if not empty? production: copy select ctx/(to-word rejoin ["_" chars/1]) 'text [
-							append language reduce [chars/1 production]
-						]
-					]
-					model/language: language 
-					model/initial: copy _Initial/text
-					model/iterations: _Iterations/data
-					model/options: reduce field-options
-					write %models.red models
-				]
-				add [
-					view/flags [
-						title "Add model"
-						_New: field 133 hint "Model name:" return 
-						button "OK" [save?: yes unview] 
-						button "Cancel" [save?: no unview]
-					][modal popup]
-					if save? [
-						new-language: copy []
-						forall chars [
-							if not empty? production: copy select ctx/(to-word rejoin ["_" chars/1]) 'text [
-								append new-language reduce [chars/1 production]
-							]
-						]
-						new-model: make map! compose/deep [
-						    title (_New/text)
-							language [(new-language)]
-							initial (copy _Initial/text)
-							iterations (_Iterations/data)
-							options [(reduce field-options)]
-						]
-						append models new-model
-						make-models/selected length? models
-					]
-				]
-				save-image [
-					view/flags [
-						title "Save image"
-						_New: field 133 data ".png" return 
-						button "Save" [save?: yes unview] 
-						button "Cancel" [save?: no unview]
-					][modal popup]
-					if save? [
-						save to-file _New/text draw size _Img/draw
-					]
-				]
-				remove [
-					remove at models _Models/selected
-					make-models
-				]
-				reload [
-					models: load %models.red
-					make-models
+				save [save-models]
+				add [add-model]
+				delete [delete-model]
+				reload [reload-models]
+				save-image [image-save]
+			]
+		]
+		on-key: func [face event][
+			if event/flags = [control] [
+				switch event/key [
+					#"^S" [save-models]
+					#"^A" [add-model]
+					#"^D" [delete-model]
+					#"^R" [reload-models]
+					#"^-" [image-save]
 				]
 			]
 		]
