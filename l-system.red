@@ -148,7 +148,7 @@ context [
 		set-fields pick models _Models/selected 
 		show-current
 	]
-	diff_: down?_: pos_: change_: none
+	diff_: down?_: pos_: change_: ev: dr: df: dr+: dr-: df+: df-: none
 	win: view/no-wait compose/deep [
 		title "L-system playground"
 		tab-panel [
@@ -221,8 +221,20 @@ context [
 					]
 				]
 				on-wheel [
-					_Matrix/2/1: either 0 > event/picked [_Matrix/2/1 / 1.1][_Matrix/2/1 * 1.1]
-					_Matrix/2/4: either 0 > event/picked [_Matrix/2/4 / 1.1][_Matrix/2/4 * 1.1]
+					ev: event/offset - face/offset - face/parent/offset - face/parent/parent/offset - face/parent/parent/parent/offset
+					dr:	to-pair reduce [_Matrix/2/5 _Matrix/2/6]
+					df: dr - ev
+					df+: to-pair reduce [to-integer df/x / 1.1 to-integer df/y / 1.1]
+					df-: to-pair reduce [to-integer df/x * 1.1 to-integer df/y * 1.1]
+					dr+: df+ + ev
+					dr-: df- + ev
+					_Matrix/2: reduce [
+						either 0 > event/picked [_Matrix/2/1 / 1.1][_Matrix/2/1 * 1.1]
+						0 0
+						either 0 > event/picked [_Matrix/2/4 / 1.1][_Matrix/2/4 * 1.1]
+						either 0 > event/picked [dr+/x][dr-/x]
+						either 0 > event/picked [dr+/y][dr-/y]
+					]
 				]
 			]
 			"Instructions" [space 10x5 
