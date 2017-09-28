@@ -240,7 +240,7 @@ context [
 			"Instructions" [space 10x5 
 					text "X"  20 text "For controlling repetition patterns only. Not directly drawn." return
 					text "L"  20 text "Inserts a line with dimensions of `length` and moves turtle to the end of this line." return
-					text "U"  20 text "Same as U. Needed for different repetition patterns in language." return
+					text "U"  20 text "Draws same line as L. Needed for different repetition patterns in language." return
 					text "M"  20 text "Moves turtle by dimensions of `length`." return
 					text "l"  20 text "Draws line of `length` dimensions in shape and moves turtle to the end of this line." return
 					text "h"  20 text "Draws horizontal line of length `len` in shape block and moves to the end of the line." return
