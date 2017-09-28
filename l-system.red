@@ -276,7 +276,7 @@ context [
 		model/options: reduce field-options
 		write %models.red models
 	]
-	add-model: has [save? new-language new-model production][
+	add-model: has [save? new-language new-model production _New][
 		view/flags [
 			title "Add model"
 			_New: field 133 hint "Model name:" return 
@@ -301,7 +301,7 @@ context [
 			make-models/selected length? models
 		]
 	]
-	image-save: has [save?][
+	image-save: has [save? _New][
 		view/flags [
 			title "Save image"
 			_New: field 133 data ".png" return 
@@ -321,7 +321,7 @@ context [
 		make-models
 	]
 	win/actors: object [
-		on-menu: func [face event /local model _New save? production sel drop new-language new-model][
+		on-menu: func [face event][
 			switch event/picked [
 				save [save-models]
 				add [add-model]
