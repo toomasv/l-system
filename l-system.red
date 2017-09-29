@@ -2,7 +2,7 @@ Red [
 	Author: "Toomas Vooglaid"
 	Date: 25-9-2017
 	Description: {Experiments with L-System}
-	Last-update: 29-9-2017
+	Last-update: 28-9-2017
 	Needs: %models.red
 ]
 context [
@@ -12,7 +12,7 @@ context [
 	delta-length: delta-len: delta-angle: anti-aliasing?: stack: commands: none
 	_L: _U: _X: _Origin: _Scale: _Length: _Angle: _Len: _Width: _Delta-width: none
 	_Delta-length: _Delta-len: _Times-length: _Delta-angle: _Anti-aliasing?: none
-	_Models: _Matrix: _Zoom: str1: str: iter: lang: win: scl: none
+	_Models: _Matrix: str1: str: iter: lang: win: scl: none
 	
 	models: load %models.red
 	chars: [#"L" #"U" #"X"]
@@ -177,7 +177,6 @@ context [
 					] select 1 on-change [
 						set-fields pick models face/selected
 						show-current
-						_Zoom/data: scl
 					]
 					label "Initial:" 35 _Initial: field 100 (to-string str) 
 					label "Iterations:" 55 _Iterations: field 20 (to-string iter) pad 5x0
@@ -185,27 +184,14 @@ context [
 					button "<" 25 [
 						_Iterations/data: _Iterations/data - 1
 						show-current
-						_Zoom/data: scl
 					]
 					button ">" 25 [
 						_Iterations/data: _Iterations/data + 1
 						show-current
-						_Zoom/data: scl
 					]
 					button "Show" 65 [
 						show-current
-						_Zoom/data: scl
 					] 
-				]
-				_Zoom: slider 20x174 data (scl) [
-					;on-create: func [face [object!]][
-					;	on-change face none
-					;]
-					on-change: func [face [object!] event [event! none!]][
-						if scale < iter [_Scale/data: round/to face/data * iter 0.01]
-						_Matrix/2/1: face/data
-						_Matrix/2/4: negate face/data
-					]
 				]
 				return
 				_Img: image (size) 
