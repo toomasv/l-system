@@ -217,8 +217,8 @@ context [
 					ev: event/offset - face/offset - face/parent/offset - face/parent/parent/offset - face/parent/parent/parent/offset
 					dr:	to-pair reduce [_Matrix/2/5 _Matrix/2/6]
 					df: dr - ev
-					df+: to-pair reduce [to-integer df/x / 1.1 to-integer df/y / 1.1]
-					df-: to-pair reduce [to-integer df/x * 1.1 to-integer df/y * 1.1]
+					df+: to-pair reduce [to-integer round df/x / 1.1 to-integer round df/y / 1.1]
+					df-: to-pair reduce [to-integer round df/x * 1.1 to-integer round df/y * 1.1]
 					dr+: df+ + ev
 					dr-: df- + ev
 					_Matrix/2: reduce [
