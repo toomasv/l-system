@@ -2,7 +2,7 @@ Red [
 	Author: "Toomas Vooglaid"
 	Date: 25-9-2017
 	Description: {Experiments with L-System}
-	Last-update: 28-9-2017
+	Last-update: 29-9-2017
 	Needs: %models.red
 ]
 context [
@@ -96,7 +96,7 @@ context [
 					]
 				)
 			|	set symb skip (append commands compose/deep either cmd: select drawing symb [cmd][[]])
-		]]
+		]] 
 		scl: either iter > 0 [scale / iter][1]
 		insert commands compose/deep [
 			anti-alias (either anti-aliasing? ['on]['off]) 
@@ -212,12 +212,19 @@ context [
 				draw [(commands)]
 				all-over
 				on-down [diff_: event/offset - _Origin/data down?_: yes]
-				on-up [down?_: no _Origin/data: pos_]
+				on-up [down?_: no]
 				on-over [
 					if down?_ [
 						change_: _Origin/data - event/offset + diff_
 						pos_: _Origin/data - change_ 
-						_Matrix/2/5: pos_/x _Matrix/2/6: pos_/y
+						_Matrix/2: reduce [
+							_Matrix/2/1
+							0 0
+							_Matrix/2/4
+							pos_/x 
+							pos_/y
+						]
+						_Origin/data: pos_
 					]
 				]
 				on-wheel [
@@ -235,6 +242,8 @@ context [
 						either 0 > event/picked [dr+/x][dr-/x]
 						either 0 > event/picked [dr+/y][dr-/y]
 					]
+					_Scale/data: round/to either 0 > event/picked [_Scale/data / 1.1][_Scale/data * 1.1] 0.01
+					_Origin/data: either 0 > event/picked [to-pair reduce [dr+/x dr+/y]][to-pair reduce [dr-/x dr-/y]]
 				]
 			]
 			"Instructions" [space 10x5 
@@ -268,11 +277,11 @@ context [
 	]
 	set-fields pick models 1
 	win/menu: [
-		"Save (^S)" save  
-		"Add ... (^A)" add 
-		"Delete (^D)" delete 
-		"Reload (^S)" reload 
-		"Save image ... (^I)" save-image
+		"Save (^^S)" save  
+		"Add ... (^^A)" add 
+		"Delete (^^D)" delete 
+		"Reload (^^S)" reload 
+		"Save image ... (^^I)" save-image
 	]
 	save-models: has [model production][
 		model: pick models _Models/selected
