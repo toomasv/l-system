@@ -2,7 +2,7 @@ Red [
 	Author: "Toomas Vooglaid"
 	Date: 25-9-2017
 	Description: {Experiments with L-System}
-	Last-update: 28-9-2017
+	Last-update: 30-9-2017
 	Needs: %models.red
 ]
 context [
