@@ -287,6 +287,7 @@ context [
 		view/flags [
 			title "Add model"
 			_New: field 133 hint "Model name:" return 
+			do [self/selected: _New]
 			button "OK" [save?: yes unview] 
 			button "Cancel" [save?: no unview]
 		][modal popup]
@@ -312,6 +313,7 @@ context [
 		view/flags [
 			title "Save image"
 			_New: field 133 data ".png" return 
+			do [self/selected: _New]
 			button "Save" [save?: yes unview] 
 			button "Cancel" [save?: no unview]
 		][modal popup]
