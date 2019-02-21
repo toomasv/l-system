@@ -352,4 +352,5 @@ context [
 		]
 	]
 	win
+	do-events
 ]
